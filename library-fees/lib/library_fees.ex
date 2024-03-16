@@ -18,14 +18,39 @@ defmodule LibraryFees do
   end
 
   def days_late(planned_return_date, actual_return_datetime) do
-    # Please implement the days_late/2 function
+    actual_return_datetime
+    |> NaiveDateTime.to_date
+    |> Date.diff(planned_return_date)
+    |> day_late_values
+  end
+
+  defp day_late_values(days_late) do
+    cond do
+        days_late < 0 -> 0
+        true -> days_late
+      end
+  end
+
+  defp compute_monday_offer(day, monday?, rate) do
+    cond do 
+        monday? == true -> trunc(day * rate * 0.5)
+        true -> day * rate
+      end
   end
 
   def monday?(datetime) do
+    datetime
+    |> NaiveDateTime.to_date
+    |> Date.day_of_week == 1
     # Please implement the monday?/1 function
   end
 
   def calculate_late_fee(checkout, return, rate) do
+    checkout_date = checkout |> datetime_from_string |> return_date
+    return_naive = datetime_from_string(return)
+    delay = days_late(checkout_date, return_naive)
+    compute_monday_offer(delay, monday?(return_naive), rate)
+    
     # Please implement the calculate_late_fee/3 function
   end
 end
